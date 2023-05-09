@@ -7,3 +7,5 @@
 *.toc
 *.nav
 *.aux
+*.out
+*.snm
