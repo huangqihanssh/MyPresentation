@@ -1,2 +1,4 @@
 # MacOS File
 *.DS_Store
+*.gz
+*.log
