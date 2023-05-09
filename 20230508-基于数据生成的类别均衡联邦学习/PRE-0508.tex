@@ -38,123 +38,84 @@
 
 \section{研究背景}{}
 
-\begin{frame}{1.1 Background}{Byzantine Generals Problem}
+\begin{frame}{1.1 联邦学习}
+\begin{itemize}
+\item 联邦学习是一种分布式机器学习方法,其利用一个中央服务器(也称为服务器端)协调各终端设备(也称为客户端),协同训练一个各客户端共享的全局模型。
+
+\item 与传统中心化训练方法不同,\textbf{联邦学习不需要各设备发送自身隐私数据至数据中心,因此有利于保护数据隐私。}具体而言,联邦学习在客户端和服务器端之间通过多轮通信迭代优化模型。
+\item 每轮通信包含两个阶段:
+\begin{itemize}
+\item[(1)]各客户端从服务器端下载全局模型,并在本地数据上进行训练以获得本地模型;
+\item[(2)]服务器端接收并聚合各客户端的本地模型参数以获得性能更优的全局模型.然而,现有联邦学习机制尚面临两大不足。
+\end{itemize}
+\end{itemize}
+
+
+
+\end{frame}
+
+\begin{frame}{1.2 现有问题}
 \begin{columns}
-\begin{column}{0.35\textwidth}
+\begin{column}{0.45\textwidth}
 \begin{figure}[ht]
 \centering
-\includegraphics[width=1\textwidth]{images/Byzantine_Generals}
+\includegraphics[width=1\textwidth]{images/img_unbalance}
 \end{figure}
 \end{column}
 \begin{column}{0.65\textwidth}
-\textbf{拜占庭将军问题（Byzantine Generals Problem），是由莱斯利·兰波特中提出的分布式对等网络通信容错问题。}
-
-在分布式计算中，不同的计算机通过通讯交换信息达成共识而按照同一套协作策略行动。但有时候，系统中的成员计算机可能出错而发送错误的信息，用于传递信息的通讯网络也可能导致信息损坏，使得网络中不同的成员关于全体协作的策略得出不同结论，从而破坏系统一致性。
-
-%一组拜占庭将军分别各率领一支军队共同围困一座城市。为了简化问题，将各支军队的行动策略限定为进攻或撤离两种。因为部分军队进攻部分军队撤离可能会造成灾难性后果，因此各位将军必须通过投票来达成一致策略，即所有军队一起进攻或所有军队一起撤离。因为各位将军分处城市不同方向，他们只能通过信使互相联系。在投票过程中每位将军都将自己投票给进攻还是撤退的信息通过信使分别通知其他所有将军，这样一来每位将军根据自己的投票和其他所有将军送来的信息就可以知道共同的投票结果而决定行动策略。
-\end{column}
-\end{columns}
-\end{frame}
-
-
-\begin{frame}{1.1 Background}{Byzantine Attacks in FL}
-\begin{columns}
-\begin{column}{0.4\textwidth}
-\begin{figure}[ht]
-\centering
-\includegraphics[width=1\textwidth]{images/bzt_fl}
-\end{figure}
-\end{column}
-\begin{column}{0.6\textwidth}
-\textbf{由于缺乏对本地梯度的身份认证，标准的联邦学习架构容易受到恶意客户端执行的拜占庭攻击。}主要分为以下两种类型的拜占庭攻击：
-%标签翻转。攻击者将其训练数据的标签“翻转”为任意标签（例如，通过置换函数）。 • 添加噪音。攻击者通过添加噪声来降低模型质量来污染数据集。 • 后门触发器。攻击者将触发器注入原始数据集的一小块区域，导致分类器错误分类到目标类别中
 \begin{itemize}
-\item Training Data-based Attack (Label Flipping, Adding Noise, Backdoor Trigger)
-\item Parameter-based Attack (Nonrandom Modification, Random Modification)
+\item \textbf{类别不均衡。}全局模型需考虑多个客户端的数据,但各客户端往往仅包含部分类别数据且类别间数据量严重不均衡,使得全局模型难以训练。所训练的本地模型容易过拟合本地数据而在全局数据上往往取得较差性能。更重要的是,这些性能较差的本地模型严重影响全局模型的训练,导致难以构建高性能全局模型。
+\item \textbf{数据分布差异。}由于各客户端的功能和用户使用习惯不同,不同客户端往往产生不同类别的数据,导致各客户端数据之间的类别分布差异较大。
 \end{itemize}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{1.2 Contributions}
+
+\begin{frame}{1.3 主要贡献}
 \begin{itemize}
-\item \textbf{本文提出了一个去中心化的联邦学习框架CMFL，能够监控梯度聚合过程并防止恶意客户端和服务器阻碍全局模型的训练。}
-\item \textbf{本文提出了一种选举策略和两种适用于不同场景的选择策略，可以保证算法的鲁棒性或加速训练过程。}
-\item \textbf{本文给出了所提出的无服务器FL框架收敛性的证明和分析，作为理论保证，考虑了选举和选择策略对全局模型性能的影响。}
-\item \textbf{本文通过实验结果表明，CMFL相比于比具有拜占庭容错的FL模型具有更快的模型收敛速度和更好的模型性能。}
+\item \textbf{本文提出类别分布均衡器来均衡客户终端的类别分布。}其中,类别分布均衡器由类别均衡采集样器和数据生成器组成。类别均衡采样器对客户端数据量不足的类别以较高概率进行采样,数据生成器则根据所采样的类别生成相应的虚拟数据；
+\item \textbf{基于类别分布均衡器,本文提出一种新颖的类别均衡联邦学习方法(CBFL)。}CBFL在客户端构造类别均衡的数据集进行训练,从而提高各本地模型的性能并减少各本地模型之间的差异性,进而构建高性能全局模型;
+\item \textbf{本文在四个标准数据集上进行了大量实验,证明了所提出CBFL的有效性.}与最新方法相比,CBFL在多种深度神经网络(如ResNet20和MobileNetV2)取得更优越的性能.尤其在客户端上类别分布高度不均衡且客户端之间类别分布差异巨大的情况下,CBFL比现有方法具有更大的优势.
 \end{itemize}
 \end{frame}
 
 \section{问题定义}
 
-\begin{frame}{2.1 Federated Learning}
+\begin{frame}{2 优化目标}
 
 \begin{columns}
 \begin{column}{0.4\textwidth}
 \begin{figure}[ht]
 \centering
-\includegraphics[width=1\textwidth]{images/fl_arch}
+\includegraphics[width=1\textwidth]{images/img_fl}
 \end{figure}
 \end{column}
 \begin{column}{0.6\textwidth}
- 在FL中服务器维护一个全局模型，每个客户端维护一个本地模型。在训练开始时，全局模型和所有本地模型将进行随机初始化，并在每轮通信中将执行以下步骤以完成训练过程：
-\begin{itemize}
-\item 服务器随机选择一部分客户端，然后将全局模型下载到本地；
-\item 子集中的每个客户端执行一定数量的随机梯度下降；
-\item 子集中的客户端将它们的本地梯度发送到服务器；
-\item 服务器接收局部梯度并执行FedAvg算法以构建全局梯度，用于更新全局模型。
-\end{itemize}
-迭代直至算法收敛或模型精度满足要求。
+为解决上述难题, 本文提出在客户端构造类别均衡的数据集进行训练的策略。 令 $\mathcal{D}$ 表示所构造的类别 均衡数 据集, $M$ 表示全局数据的类别数,则 $\mathcal{D}=\left\{(x, y) \mid P(y=i)=\frac{1}{M}, \quad i \in\{0,1, \ldots, M-1\}\right.$.
+$p(\mathcal{D})$ 表示数据集 $\mathcal{D}$ 所代表的经验分布. 因此, 本文 旨在解决如下优化问题:
+$$
+\min _{\boldsymbol{W}_T} \mathbb{E}_k\left[\mathbb{E}_{x_k \sim p(\mathcal{D})}\left[\mathcal{L}\left(x_k ; \boldsymbol{W}_T\right)\right]\right]
+$$
+与仅仅利用客户端本地数据进行训练的方式相比,基于类别均衡的数据集进行训练使得各客户端本地模型之间的差异大大减少。
 \end{column}
 \end{columns}
 
 
 \end{frame}
 
-\begin{frame}{2.2 Problem Formulation}
-
-We consider the typical FL setup with total $K$ clients. The $k$ th client for $k=1, \ldots, K$ owns a local dataset $\mathcal{D}_k$, which contains $n_k=\left|\mathcal{D}_k\right|$ data samples. We denote the userdefined loss function for sample $\xi$ and model parameter vector $\mathbf{w}$ as $f(\mathbf{w}, \xi)$, the local objective function $F_k(\mathbf{w})$ on the $k$-th client can be written as follows:
-$$
-F_k(\mathbf{w})=\frac{1}{n_k} \sum_{\xi \in \mathcal{D}_k} f(\mathbf{w}, \xi) .
-$$
-We consider the following global objective function:
-$$
-F(\mathbf{w})=\sum_{k=1}^K p_k F_k(\mathbf{w})
-$$
-where $p_k=n_k / \sum_{k=1}^K n_k$ denotes the weight of the dataset on the $k$-th client. 
-\end{frame}
-
-\begin{frame}{2.2 Problem Formulation}
-Formally, $\nabla F_k\left(\mathbf{w}_{k, i}^t\right)$ denotes the local gradient over dataset $\mathcal{D}_k$. Assume that at round $t$ the $k$ th client trains its local model $\mathbf{w}_{k, i}^t$ over mini-batch $\mathcal{B}_{k, i}^t$ for $i$ iterations of SGD, where $\mathcal{B}_{k, i}^t$ is randomly sampled from $\mathcal{D}_k$. Then the $k$-th client computes the local gradient $g_k\left(\mathbf{w}_{k, i}^t, \mathcal{B}_{k, i}^t\right)$ by the following formula:
-$$
-g_k\left(\mathbf{w}_{k, i}^t, \mathcal{B}_{k, i}^t\right)=\frac{1}{\left|\mathcal{B}_{k, i}^t\right|} \sum_{\xi \in \mathcal{B}_{k, i}^t} \nabla f\left(\mathbf{w}_{k, i}^t, \xi\right)
-$$
-The $g_k\left(\mathbf{w}_{k, i}^t, \mathcal{B}_{k, i}^t\right)$ is used to update the local model $\mathbf{w}_{k, i}^t$ as follows:
-$$
-\mathbf{w}_{k, i+1}^t=\mathbf{w}_{k, i}^t-\eta_i^t g_k\left(\mathbf{w}_{k, i}^t, \mathcal{B}_{k, i}^t\right)
-$$
-where $\eta_i^\iota$ represents the local learning rate at iteration $i$ of round $t$ and $\tau$ represents the maximal local SGD iterations. 
-
-\end{frame}
-\begin{frame}{2.2 Problem Formulation}
-And after $\tau$ iterations of local updating, the local gradient $g_k\left(\mathbf{w}_{k, \tau}^t, \mathcal{B}_{k, \tau}^t\right)$ is sent to the server to construct a global gradient as follows:
-$$
-\bar{g}^t=\sum_{k \in S^t} p_{k, S^t} g_k\left(\mathbf{w}_{k, \tau}^t, \mathcal{B}_{k, \tau}^t\right),
-$$
-where $S^t$ denotes the subset of clients and $p_{k, S^t}=$ $n_k / \sum_{k \in S^t} n_k$ is the weight of the dataset on the $k$-th client of $S^t$. The $\overline{\mathbf{w}}^t$ is updated at each round as follows:
-$$
-\overline{\mathbf{w}}^{t+1}=\overline{\mathbf{w}}^t-\eta_t \bar{g}^t,
-$$
-where $\eta_t$ represents the global learning rate.
-\end{frame}
-
 \section{研究方法}
 
-\begin{frame}{3.1 Framework of CMFL}
+\begin{frame}{3.1 CBFL方案框架}
 \centering
-\includegraphics[width=1\textwidth]{images/cmfl_framework}
+\includegraphics[width=1\textwidth]{images/img_overview}
 
-%图 1：CMFL 的训练过程如下： (1) 从空闲客户端中随机选择训练客户端； (2) training clients 和 committee clients 下载全局模型 wt 并开始训练，然后将它们的局部梯度 ^ gt k 发送给 committee clients； (3) 组委会客户根据评分系统为每位客户打分； (4) 委员会根据遴选策略遴选聚合客户； (5) 利用聚合客户端上传的局部梯度构建全局梯度wt+1； (6) 根据选举策略从培训客户中选出新的委员会客户； (7) 将上一轮的委员会客户添加到空闲客户列表中。
+\end{frame}
+
+\begin{frame}{3.2 数据生成方案}
+\centering
+\includegraphics[width=1\textwidth]{images/img_overview}
+
 \end{frame}
 
 \begin{frame}{3.2 Committee Mechanism}{Scoring System}
@@ -195,59 +156,7 @@ Election Strategy 旨在保证委员会客户的诚实。因此，委员会必�
 
 \end{frame}
 
-\begin{frame}{3.2 Committee Mechanism}{Committee Consensus Protocol}
-\begin{columns}
-\begin{column}{0.5\textwidth}
-\vspace{0.5em}
-\includegraphics[width=1\textwidth]{images/algo_ccp}
-\end{column}
-\begin{column}{0.5\textwidth}
-%在该去中心化框架中，委员会客户必须达成共识才能完成评分、聚合、选择和选举过程。
-\\ \hspace*{\fill} \\
-%The designed committee consensus protocol(CCP) is as follows(at round t):
-%\begin{itemize}
-%\item[1)] 评分过程结束后，每个委员会成员获得培训客户的分数。然后每个委员会成员将其分数广播给其他委员会成员。
-%\item[2)] 随机选择一个委员会客户 p 作为主要委员会成员，而其他委员会成员被视为复制委员会成员。
-%\item[3)] Gradient Verification.
-%\item[4)] Global Model Updating.
-%\item[5)] Election of New Committee Members.
-%\end{itemize}
-In our decentralized framework, the committee clients must reach a consensus to complete the scoring, aggregation, selection, and election process. Thus we design a committee consensus protocol, which is inspired by the pBFT
-\end{column}
-\end{columns}
-\end{frame}
 
-\begin{frame}{3.2 Committee Mechanism}{Committee Consensus Protocol - The Voting Algorithm}
-\begin{columns}
-\begin{column}{0.45\textwidth}
-\includegraphics[width=1\textwidth]{images/algo_vote1}
-\end{column}
-\begin{column}{0.55\textwidth}
-\includegraphics[width=1\textwidth]{images/algo_vote2}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{3.3 Training Algorithm}
-\begin{columns}
-\begin{column}{0.5\textwidth}
-\includegraphics[width=0.95\textwidth]{images/algo_training1}
-\end{column}
-\begin{column}{0.45\textwidth}
-\includegraphics[width=0.95\textwidth]{images/algo_training2}
-
-The algorithm performs the following five steps in each round:
-\begin{itemize}
-\item[1)] Random Sampling.
-\item[2)] Local Training.
-\item[3)] Gradient Verification.
-\item[4)] Global Model Updating.
-\item[5)] Election of New Committee Members.
-\end{itemize}
-
-\end{column}
-\end{columns}
-\end{frame}
 
 
 
@@ -256,49 +165,46 @@ The algorithm performs the following five steps in each round:
 
 \section{实验分析}
 
-\begin{frame}{4.1 Nomal Training Experiment}{Experiment Setting}
+\begin{frame}{4.1 数据集}
+
 	\begin{itemize}
-\item[1)] FEMNIST-AlexNet. \textbf{FEMNIST} (Federated Extended MNIST) is a real-world distributed dataset formed by a specific division of the EMNIST dataset. 
-\item[2)] Sentiment140-LSTM. \textbf{Sentiment140} is a realworld distributed dataset which focus on the text sentiment analysis task, including 1,600,000 tweets extracted using the Twitter API. 
-\item[3)] Shakespeare-LSTM. \textbf{Shakespeare} is a real-world distributed dataset built from The Complete Works of William Shakespeare. 
+\item[1)] CIFAR-10由60000张32×32像素的彩色图像组成,共包含10个类别,每个类别包含6000张图像.训练集与测试集分别包含50000张和10000张图像; 
+\item[2)] CIFAR-100与CIFAR-10的组成相似,但CIFAR-100包含了更多的类别.CIFAR-100共包含100个类别,每个类别包含500张训练图像和100张测试图像; 
+\item[3)] CINIC-10包含270000张图像.值得一提的是,该数据集的图像不一定来自相同的分布.这个特性非常适合联邦学习,因为实际场景中各个客户端的数据不一定服从相同分布.CINIC-10具有相同大小的训练集、验证集和测试集.本文在训练集上进行模型训练,并在测试集上进行测试,而不使用该数据集的验证集; 
+\item[4)] iNaturalist2019是一个大规模的类别分布高度不均衡的真实数据集.该数据集包含1010个类别,总计268243张彩色图片,由i Naturalist网站的2295个用户收集和上传.每个用户上传的图片被视为一个客户端的数据集.
 \end{itemize}
 \end{frame}
 
-\begin{frame}{4.1 Nomal Training Experiment}{Result Analysis}
-	\includegraphics[width=0.78\textwidth]{images/exp_fig2}
+\begin{frame}{4.2 对比模型}
+	本文将CBFL与目前最新的方法进行比较,即FedAvg、FedPoxr、SCAFFOLD和FedNvao.本实验通过狄利克雷分布Dir(0.1)模拟各客户端数据的类别分布.所有方法基于两种常见的深度神经网络模型(即ResNet20和MobileNet V2)进行训练和性能比较.
 \end{frame}
 
-%\begin{frame}{4.2 Robustness Comparative Experiment}{Experiment Setting}
-%	
-%\end{frame}
 
-%梯度缩放攻击：恶意客户端将局部梯度中的每个元素乘以一个随机值 λ ∈ [a, 1)，其中 a 是一个定义的常数，表示攻击的强度。在这个实验中，我们设置 a = 0.5。 
-%同值攻击：恶意客户端将局部梯度替换为大小相同且元素均为0 的向量。 
-%反向梯度攻击：恶意客户端将局部梯度替换为向量大小相同方向相反。
-
-
-\begin{frame}{4.2 Robustness Comparative Experiment}{Result Analysis}
-	\includegraphics[width=0.78\textwidth]{images/exp_fig4}
+\begin{frame}{4.3 实验结果}{Result Analysis}
+	\includegraphics[width=0.75\textwidth]{images/img_expr1}
 \end{frame}
 
-\begin{frame}{4.2 Robustness Comparative Experiment}{Result Analysis}
-	\includegraphics[width=0.78\textwidth]{images/exp_fig5}
+\begin{frame}{4.3 实验结果}{Result Analysis}
+	\includegraphics[width=0.75\textwidth]{images/img_expr3}
 \end{frame}
 
-\begin{frame}{4.2 Robustness Comparative Experiment}{Result Analysis}
-	\includegraphics[width=0.78\textwidth]{images/exp_fig6}
+\begin{frame}{4.3 实验结果}{Result Analysis}
+	\includegraphics[width=1.\textwidth]{images/img_expr2}
 \end{frame}
+
+\begin{frame}{4.3 实验结果}{Result Analysis}
+	\includegraphics[width=1.\textwidth]{images/img_expr4}
+\end{frame}
+
+
 
 \section{研究总结}
 
 \begin{frame}{研究总结}
 
-
-\begin{itemize}
-    \item 在本文中，我们提出了一个基于委员会机制的无服务器 FL 框架，它可以在考虑拜占庭攻击时确保鲁棒性。
-    \item 此外，我们还为我们提出的框架提供了收敛保证。在理论分析的启发下，我们设计了选举和选择策略，使模型具有针对拜占庭攻击和恶意服务器问题的鲁棒性。
-    \item 实验结果表明该模型优于典型的联邦学习和拜占庭容错模型，进一步验证了所提出框架的有效性和鲁棒性。
-  \end{itemize}
+本文提出了一种基于数据生成的类别均衡联邦学习(CBFL)方法.CBFL针对各客户端构造类别均衡的数据集,以降低客户端类别不均衡和客户端之间分布差异的影响.
+\\ \hspace*{\fill} \\
+具体而言,CBFL设计了一个类别分布均衡器,其由一个类别均衡采样器和一个数据生成器组成.其中,类别均衡采样器以较高概率采样客户端本地数据量不足的类别,然后,数据生成器根据所采样的类别生成相应的虚拟数据.结合本地数据和虚拟数据,客户端构造类别均衡的数据集来进行模型训练,从而有利于构建高性能全局模型.
 \end{frame}
 
 
