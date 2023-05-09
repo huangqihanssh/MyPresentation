@@ -1,0 +1,4 @@
+\beamer@sectionintoc {1}{选题依据}{2}{0}{1}
+\beamer@sectionintoc {2}{研究内容}{5}{0}{2}
+\beamer@sectionintoc {3}{研究方案}{7}{0}{3}
+\beamer@sectionintoc {4}{特色与创新}{16}{0}{4}
