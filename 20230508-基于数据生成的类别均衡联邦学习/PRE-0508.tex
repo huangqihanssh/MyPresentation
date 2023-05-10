@@ -36,7 +36,7 @@
 \maketitle
 
 
-\section{研究背景}{}
+\section{研究背景}
 
 \begin{frame}{1.1 联邦学习}
 \begin{itemize}
@@ -112,53 +112,90 @@ $$
 
 \end{frame}
 
-\begin{frame}{3.2 数据生成方案}
+	
+
+
+\begin{frame}{3.2 类别分布均衡器}{类别均衡采样器}
+
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{figure}[ht]
 \centering
-\includegraphics[width=1\textwidth]{images/img_overview}
+\includegraphics[width=1\textwidth]{images/img_gan}
+\end{figure}
 
-\end{frame}
-
-\begin{frame}{3.2 Committee Mechanism}{Scoring System}
-评分系统的关键是通过计算欧氏距离来区分诚实梯度和恶意梯度。两个诚实梯度的欧氏距离低于诚实梯度和恶意梯度的欧氏距离。基于这种认识，评分系统被设计为比较两个梯度的欧氏距离，其中上传诚实梯度的客户端可以获得更高的分数，而上传恶意梯度的客户端将获得较低的分数。
-\\ \hspace*{\fill} \\
-Assume that the local gradient on the $k$-th training client at round $t$ is denoted as $\hat{g}_k^t=g_k\left(\mathbf{w}_{k, \tau}^t, \mathcal{B}_{k, \tau}^t\right)$, and the local gradient on the the $c$-th committee client at round $t$ is expressed as $\hat{g}_c^t=g_c\left(\mathbf{w}_{c, \tau}^t, \mathcal{B}_{k, \tau}^t\right)$. The score $\mathcal{P}_k^c$ of the $k$ th training client assigned by the $c$-th committee client is computed as follows:
+类别均衡采样器构造完成后, 各客户端根据采 样概率 $\widetilde{P}_m$ 采样相应的类别 $m$。 值得注意的是, 该过程在客户端进行, 客户端的数据分布信息不会发送至服务器端。
+\end{column}
+\begin{column}{0.5\textwidth}
+(1) 统计客户端上类别 $m$ 的概率:
 $$
-\mathcal{P}_k^c=\frac{1}{\left\|\hat{g}_k^t-\hat{g}_c^t\right\|_2^2} .
+P_m=\frac{n_m}{\sum_{m=0}^{M-1} n_m}
 $$
-\end{frame}
-
-\begin{frame}{3.2 Committee Mechanism}{Scoring System}
-Since $\hat{g}_k^t$ and $\hat{g}_c^t$ are local gradients generated from different clients, we assume that $\hat{g}_k^t \neq \hat{g}_c^t$ for any $k \in S_b^t, c \in S_c^t$. We define 
+(2)计算与客户端上类别分布相反的采样概率, 即类别 $m$ 的采样概率为:
 $$
-\mathcal{P}_k=\frac{1}{\frac{1}{C} \sum_c^C\left\|\hat{g}_k^t-\hat{g}_c^t\right\|_2^2}=\frac{C}{\sum_c^C \frac{1}{\mathcal{P}_k^c}}
+\bar{P}_m=1-P_m
 $$
-as the final score of the $k$-th training client. 
-\\ \hspace*{\fill} \\
-拜占庭攻击通常带有恶意梯度，这直接增加了这些梯度与诚实梯度之间的欧氏距离。因此，当恶意客户端的比例在可容忍范围内时，恶意训练客户端的分数预计会低于诚实训练客户端。但是，在没有拜占庭攻击的情况下，分数代表客户端的异构程度。得分越高意味着异质性程度越高。
-\end{frame}
-
-\begin{frame}{3.2 Committee Mechanism}{Selection Strategy}
-基于上述 Scoring System 可以通过接受高分梯度来实现安全聚合，因为恶意梯度会获得低分。此外，收敛分析和实验结果表明，相反的策略在非攻击场景中表现更好。因此，针对不同的考虑，本文还设计了两种相反的选择策略如下：
-\begin{itemize}
-\item Selection Strategy I. 选择几个得分相对较高的局部梯度来构建全局梯度，用于全局模型的更新。此策略希望在欧几里德空间中类似于委员会梯度的局部梯度参与全局梯度的构建。
-\item Selection Strategy II. 选择几个得分相对较低的局部梯度来构建全局梯度，用于全局模型的更新。此策略希望欧几里德空间中不同于委员会梯度的局部梯度参与全局梯度的构建。
-\end{itemize}
-\end{frame}
-
-\begin{frame}{3.2 Committee Mechanism}{Election Strategy}
-Election Strategy 旨在保证委员会客户的诚实。因此，委员会必须保证诚实的成员多于恶意的成员。否则，委员会无法过滤掉恶意梯度。本文根据分数对训练成员进行排序，然后选择这些靠近中间位置的训练成员作为下一轮的委员会成员。本文基于以下两个方面考虑来设计选举机制：
-\begin{itemize}
-\item \textbf{Robustness. } 恶意训练客户端会比诚实训练客户端获得更低的分数。因此，选择靠近中上位的训练客户端，可以防止恶意训练客户端成为下一轮的委员会客户端，从而保证全局模型的安全性。
-\item \textbf{System Stability. } 得分最高的培训客户不会被选为新的委员会成员，以避免系统过于依赖委员会成员的初始化。即应符合“委员应该是能代表多数的人”的直觉。
-%当我们选择那些得分最高的训练客户组成新的委员会时，全局模型的学习方向将完全由初始委员会成员决定。这是因为那些局部梯度与委员会梯度之间欧氏距离较大的客户，不仅难以被选中参与聚合过程，而且失去了竞选下一轮委员会成员的机会。这符合我们“委员应该是能代表多数的人”的直觉。
-\end{itemize}
+(3) 归一化采样概率:
+$$
+\widetilde{P}_m=\frac{\bar{P}_m}{\sum_{m=0}^{M-1} \bar{P}_m}
+$$
+\end{column}
+\end{columns}
 
 
 \end{frame}
 
 
+\begin{frame}{3.2 类别分布均衡器}{数据生成器}
+通过类别均衡采样器, 客户端可获得各类别的 采样量。 然而, 如何根据所采样的类别获得相应的 数据以用于本地模型的训练仍然是一个难题。 为解 决该问题, 本文引入了数据生成器 $G$。 该数据生成 器的输人为类别标签 $y$ 和噪声矢量 $z$。 其中 $y \in$ $\{0,1, \ldots, M-1\}, z$ 服从高斯分布 $N(0,1)$。 数据生 成器 $G$ 根据噪声矢量 $z$ 和类别标签 $y$ 生成相应的数据 $\hat{x}$, 即
+$$
+\hat{x}=G(z \mid y), z \sim N(0,1) 
+$$
+数据生成器和类别均衡采样器构造完成后, 客户端首先根据类别均衡采样器采样类别 $m$, 然后利用数据 生成器生成类别为 $m$ 的虚拟数据。 最后, 客户端结 合本地数据和生成的虚拟数据, 从而构造类别均衡 的数据集来训练本地模型。
+\end{frame}
 
 
+\begin{frame}{3.2 模型训练}{数据生成器的训练}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{images/img_gan_train}
+\end{figure}
+为训练数据生成器,一种常用的做法是采取对抗学习的方式。该方式需要额外训练一个判别器,且训练判别器需要相应类别大量的真实数据样本。本文提出利用全局模型的全局数据分布信息来训练生成器,从而无需训练判别器。
+\end{frame}
+
+\begin{frame}{3.2 模型训练}{本地模型的训练}
+
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\textwidth]{images/algo1}
+\end{figure}
+
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\textwidth]{images/algo2}
+\end{figure}
+\end{column}
+\end{columns}
+
+
+\end{frame}
+
+
+
+\begin{frame}{3.2 模型聚合}
+联邦学习通过聚合各客户端本地模型的参数获 得一个高性能全局模型。本文所提出的 CBFL 在客户端构造类别均衡的数据集来训练本地模型, 使得服务器端更易于聚合这些性能良好且差异性小的本地模型。参考 $\mathrm{FedAvg}, \mathrm{CBFL}$ 以 加权平均的方式聚合各本地模型的参数来更新全局 模型, 即
+$$
+\boldsymbol{W}_T=\mathbb{E}_k\left[\boldsymbol{W}_{S_k}\right]=\sum_{k \in \varepsilon_r} \frac{N_k}{\sum_{k \in \varepsilon_r} N_k} \boldsymbol{W}_{S_k} 
+$$
+通过上述公式, 全局模型汇聚各客户端本地模型的信息. 此外, 更新后的全局模型也将帮助数据 生成器获得更准确的全局数据分布信息.
+
+\end{frame}
 
 
 
