@@ -92,8 +92,11 @@
 \end{figure}
 \end{column}
 \begin{column}{0.6\textwidth}
-为解决上述难题, 本文提出在客户端构造类别均衡的数据集进行训练的策略。 令 $\mathcal{D}$ 表示所构造的类别 均衡数 据集, $M$ 表示全局数据的类别数,则 $\mathcal{D}=\left\{(x, y) \mid P(y=i)=\frac{1}{M}, \quad i \in\{0,1, \ldots, M-1\}\right.$.
-$p(\mathcal{D})$ 表示数据集 $\mathcal{D}$ 所代表的经验分布. 因此, 本文 旨在解决如下优化问题:
+为解决上述难题, 本文提出在客户端构造类别均衡的数据集进行训练的策略。 令 $\mathcal{D}$ 表示所构造的类别 均衡数 据集, $M$ 表示全局数据的类别数,则 
+$$
+\mathcal{D}=\left\{(x, y) \mid P(y=i)=\frac{1}{M}, \quad i \in\{0,1, \ldots, M-1\}\right\}
+$$
+其中 $p(\mathcal{D})$ 表示数据集 $\mathcal{D}$ 所代表的经验分布. 因此, 本文 旨在解决如下优化问题:
 $$
 \min _{\boldsymbol{W}_T} \mathbb{E}_k\left[\mathbb{E}_{x_k \sim p(\mathcal{D})}\left[\mathcal{L}\left(x_k ; \boldsymbol{W}_T\right)\right]\right]
 $$
@@ -148,7 +151,7 @@ $$
 
 
 \begin{frame}{3.2 类别分布均衡器}{数据生成器}
-通过类别均衡采样器, 客户端可获得各类别的 采样量。 然而, 如何根据所采样的类别获得相应的 数据以用于本地模型的训练仍然是一个难题。 为解 决该问题, 本文引入了数据生成器 $G$。 该数据生成 器的输人为类别标签 $y$ 和噪声矢量 $z$。 其中 $y \in$ $\{0,1, \ldots, M-1\}, z$ 服从高斯分布 $N(0,1)$。 数据生 成器 $G$ 根据噪声矢量 $z$ 和类别标签 $y$ 生成相应的数据 $\hat{x}$, 即
+通过类别均衡采样器, 客户端可获得各类别的 采样量。 然而, 如何根据所采样的类别获得相应的 数据以用于本地模型的训练仍然是一个难题。 为解 决该问题, 本文引入了数据生成器 $G$。\textbf{该数据生成 器的输人为类别标签 $y$ 和噪声矢量 $z$。 其中 $y \in$ $\{0,1, \ldots, M-1\}, z$ 服从高斯分布 $N(0,1)$。}  数据生 成器 $G$ 根据噪声矢量 $z$ 和类别标签 $y$ 生成相应的数据 $\hat{x}$, 即
 $$
 \hat{x}=G(z \mid y), z \sim N(0,1) 
 $$
@@ -156,7 +159,7 @@ $$
 \end{frame}
 
 
-\begin{frame}{3.2 模型训练}{数据生成器的训练}
+\begin{frame}{3.3 数据生成器训练}
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.8\textwidth]{images/img_gan_train}
@@ -164,7 +167,7 @@ $$
 为训练数据生成器,一种常用的做法是采取对抗学习的方式。该方式需要额外训练一个判别器,且训练判别器需要相应类别大量的真实数据样本。本文提出利用全局模型的全局数据分布信息来训练生成器,从而无需训练判别器。
 \end{frame}
 
-\begin{frame}{3.2 模型训练}{本地模型的训练}
+\begin{frame}{3.4 模型训练}
 
 
 \begin{columns}
@@ -188,14 +191,14 @@ $$
 
 
 
-\begin{frame}{3.2 模型聚合}
-联邦学习通过聚合各客户端本地模型的参数获 得一个高性能全局模型。本文所提出的 CBFL 在客户端构造类别均衡的数据集来训练本地模型, 使得服务器端更易于聚合这些性能良好且差异性小的本地模型。参考 $\mathrm{FedAvg}, \mathrm{CBFL}$ 以 加权平均的方式聚合各本地模型的参数来更新全局 模型, 即
-$$
-\boldsymbol{W}_T=\mathbb{E}_k\left[\boldsymbol{W}_{S_k}\right]=\sum_{k \in \varepsilon_r} \frac{N_k}{\sum_{k \in \varepsilon_r} N_k} \boldsymbol{W}_{S_k} 
-$$
-通过上述公式, 全局模型汇聚各客户端本地模型的信息. 此外, 更新后的全局模型也将帮助数据 生成器获得更准确的全局数据分布信息.
-
-\end{frame}
+%\begin{frame}{3.5 模型聚合}
+%联邦学习通过聚合各客户端本地模型的参数获 得一个高性能全局模型。本文所提出的 CBFL 在客户端构造类别均衡的数据集来训练本地模型, 使得服务器端更易于聚合这些性能良好且差异性小的本地模型。参考 $\mathrm{FedAvg}, \mathrm{CBFL}$ 以 加权平均的方式聚合各本地模型的参数来更新全局 模型, 即
+%$$
+%\boldsymbol{W}_T=\mathbb{E}_k\left[\boldsymbol{W}_{S_k}\right]=\sum_{k \in \varepsilon_r} \frac{N_k}{\sum_{k \in \varepsilon_r} N_k} \boldsymbol{W}_{S_k} 
+%$$
+%通过上述公式, 全局模型汇聚各客户端本地模型的信息. 此外, 更新后的全局模型也将帮助数据 生成器获得更准确的全局数据分布信息.
+%
+%\end{frame}
 
 
 
@@ -218,6 +221,10 @@ $$
 
 
 \begin{frame}{4.3 实验结果}{Result Analysis}
+	\includegraphics[width=1.\textwidth]{images/img_expr2}
+\end{frame}
+
+\begin{frame}{4.3 实验结果}{Result Analysis}
 	\includegraphics[width=0.75\textwidth]{images/img_expr1}
 \end{frame}
 
@@ -225,9 +232,6 @@ $$
 	\includegraphics[width=0.75\textwidth]{images/img_expr3}
 \end{frame}
 
-\begin{frame}{4.3 实验结果}{Result Analysis}
-	\includegraphics[width=1.\textwidth]{images/img_expr2}
-\end{frame}
 
 \begin{frame}{4.3 实验结果}{Result Analysis}
 	\includegraphics[width=1.\textwidth]{images/img_expr4}
