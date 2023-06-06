@@ -24,9 +24,9 @@
 \makeatother
 
 % meta-data
-\title{\huge 基于数据生成的类别均衡联邦学习}
+\title{\huge GFL: Federated Learning on Non-IID Data via Privacy-preserving Synthetic Data}
 \subtitle{汇报人：黄其涵 \qquad 导师：章静 教授 \qquad }
-\author{计算机学报, 2023}
+\author{2023 IEEE International Conference on Pervasive Computing and Communications (PerCom)}
 \date{\today}
 \titlebackground{images/bg4}
 
@@ -50,7 +50,19 @@
 \end{itemize}
 \end{itemize}
 
+\end{frame}
 
+\begin{frame}{1.1 联邦学习}
+\begin{itemize}
+\item 联邦学习是一种分布式机器学习方法,其利用一个中央服务器(也称为服务器端)协调各终端设备(也称为客户端),协同训练一个各客户端共享的全局模型。
+
+\item 与传统中心化训练方法不同,\textbf{联邦学习不需要各设备发送自身隐私数据至数据中心,因此有利于保护数据隐私。}具体而言,联邦学习在客户端和服务器端之间通过多轮通信迭代优化模型。
+\item 每轮通信包含两个阶段:
+\begin{itemize}
+\item[(1)]各客户端从服务器端下载全局模型,并在本地数据上进行训练以获得本地模型;
+\item[(2)]服务器端接收并聚合各客户端的本地模型参数以获得性能更优的全局模型.然而,现有联邦学习机制尚面临两大不足。
+\end{itemize}
+\end{itemize}
 
 \end{frame}
 
@@ -74,9 +86,9 @@
 
 \begin{frame}{1.3 主要贡献}
 \begin{itemize}
-\item \textbf{本文提出类别分布均衡器来均衡客户终端的类别分布。}其中,类别分布均衡器由类别均衡采集样器和数据生成器组成。类别均衡采样器对客户端数据量不足的类别以较高概率进行采样,数据生成器则根据所采样的类别生成相应的虚拟数据；
-\item \textbf{基于类别分布均衡器,本文提出一种新颖的类别均衡联邦学习方法(CBFL)。}CBFL在客户端构造类别均衡的数据集进行训练,从而提高各本地模型的性能并减少各本地模型之间的差异性,进而构建高性能全局模型;
-\item \textbf{本文在四个标准数据集上进行了大量实验,证明了所提出CBFL的有效性.}与最新方法相比,CBFL在多种深度神经网络(如ResNet20和MobileNetV2)取得更优越的性能.尤其在客户端上类别分布高度不均衡且客户端之间类别分布差异巨大的情况下,CBFL比现有方法具有更大的优势.
+\item \textbf{本文提出基于GAN的GFL框架以解决FL中数据异构性问题，并为 FL 系统构建高性能全局模型。 }GFL 促进了 FL 训练过程，同时保持了成员身份的隐私和原始数据在客户中的分布。
+\item \textbf{本文提出了一种保护隐私的数据生成工作流程，以生成符合我们隐私设置的合成样本。} DPGAN 用于生成满足差分隐私的样本，以保护客户端免受成员推理攻击。本文生成大量合成数据并选择一个随机分布的子集来隐藏客户端的真实数据分布。
+\item \textbf{本文对合成数据进行“iidify”处理，以 iid 方式训练全局模型，并使用 Epoch Decay 参数来解决模式崩溃问题并避免使用低质量的合成数据。}
 \end{itemize}
 \end{frame}
 
@@ -109,16 +121,16 @@ $$
 
 \section{研究方法}
 
-\begin{frame}{3.1 CBFL方案框架}
+\begin{frame}{3.1  Overview of Generative Federated Learning (GFL)}
 \centering
-\includegraphics[width=1\textwidth]{images/img_overview}
+\includegraphics[width=1\textwidth]{images/gfl_overview}
 
 \end{frame}
 
 	
 
 
-\begin{frame}{3.2 类别分布均衡器}{类别均衡采样器}
+\begin{frame}{3.2 Synthetic Data Generation}
 
 
 \begin{columns}
@@ -150,7 +162,7 @@ $$
 \end{frame}
 
 
-\begin{frame}{3.2 类别分布均衡器}{数据生成器}
+\begin{frame}{3.3 Federated Learning with Synthetic Data}{数据生成器}
 通过类别均衡采样器, 客户端可获得各类别的 采样量。 然而, 如何根据所采样的类别获得相应的 数据以用于本地模型的训练仍然是一个难题。 为解 决该问题, 本文引入了数据生成器 $G$。\textbf{该数据生成 器的输人为类别标签 $y$ 和噪声矢量 $z$。 其中 $y \in$ $\{0,1, \ldots, M-1\}, z$ 服从高斯分布 $N(0,1)$。}  数据生 成器 $G$ 根据噪声矢量 $z$ 和类别标签 $y$ 生成相应的数据 $\hat{x}$, 即
 $$
 \hat{x}=G(z \mid y), z \sim N(0,1) 
@@ -159,64 +171,26 @@ $$
 \end{frame}
 
 
-\begin{frame}{3.3 数据生成器训练}
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.8\textwidth]{images/img_gan_train}
-\end{figure}
-为训练数据生成器,一种常用的做法是采取对抗学习的方式。该方式需要额外训练一个判别器,且训练判别器需要相应类别大量的真实数据样本。本文提出利用全局模型的全局数据分布信息来训练生成器,从而无需训练判别器。
-\end{frame}
-
-\begin{frame}{3.4 模型训练}
-
-
-\begin{columns}
-\begin{column}{0.5\textwidth}
-\begin{figure}[ht]
-\centering
-\includegraphics[width=1\textwidth]{images/algo1}
-\end{figure}
-
-\end{column}
-\begin{column}{0.5\textwidth}
-\begin{figure}[ht]
-\centering
-\includegraphics[width=1\textwidth]{images/algo2}
-\end{figure}
-\end{column}
-\end{columns}
-
-
-\end{frame}
-
-
-
-%\begin{frame}{3.5 模型聚合}
-%联邦学习通过聚合各客户端本地模型的参数获 得一个高性能全局模型。本文所提出的 CBFL 在客户端构造类别均衡的数据集来训练本地模型, 使得服务器端更易于聚合这些性能良好且差异性小的本地模型。参考 $\mathrm{FedAvg}, \mathrm{CBFL}$ 以 加权平均的方式聚合各本地模型的参数来更新全局 模型, 即
-%$$
-%\boldsymbol{W}_T=\mathbb{E}_k\left[\boldsymbol{W}_{S_k}\right]=\sum_{k \in \varepsilon_r} \frac{N_k}{\sum_{k \in \varepsilon_r} N_k} \boldsymbol{W}_{S_k} 
-%$$
-%通过上述公式, 全局模型汇聚各客户端本地模型的信息. 此外, 更新后的全局模型也将帮助数据 生成器获得更准确的全局数据分布信息.
-%
-%\end{frame}
-
 
 
 
 \section{实验分析}
 
 \begin{frame}{4.1 数据集}
+在我们的实验中，我们使用 DPGAN 作为Local GAN模型，ResNet18 作为 EMNIST 和 CIFAR-10联邦学习的训练模型。
 
 	\begin{itemize}
-\item[1)] CIFAR-10由60000张32×32像素的彩色图像组成,共包含10个类别,每个类别包含6000张图像.训练集与测试集分别包含50000张和10000张图像; 
-\item[2)] CIFAR-100与CIFAR-10的组成相似,但CIFAR-100包含了更多的类别.CIFAR-100共包含100个类别,每个类别包含500张训练图像和100张测试图像; 
-\item[3)] CINIC-10包含270000张图像.值得一提的是,该数据集的图像不一定来自相同的分布.这个特性非常适合联邦学习,因为实际场景中各个客户端的数据不一定服从相同分布.CINIC-10具有相同大小的训练集、验证集和测试集.本文在训练集上进行模型训练,并在测试集上进行测试,而不使用该数据集的验证集; 
-\item[4)] iNaturalist2019是一个大规模的类别分布高度不均衡的真实数据集.该数据集包含1010个类别,总计268243张彩色图片,由i Naturalist网站的2295个用户收集和上传.每个用户上传的图片被视为一个客户端的数据集.
+\item[1)] EMNIST。 在实验中使用它的“Digits”子集。它包含 10 个类，总共 280, 000 个样本，分为 240, 000 个训练样本和 40, 000 个测试样本。与 MNIST 相比，它拥有更多数据并且完全平衡。
+\item[2)] CIFAR-10。它包含 10 个不同类别的 60, 000 个 32 × 32 彩色图像，与 EMNIST 相比，这是一项更复杂的任务。我们使用这个数据集来衡量 GFL 在艰巨任务中的稳定性。
 \end{itemize}
 \end{frame}
 
 \begin{frame}{4.2 对比模型}
-	本文将CBFL与目前最新的方法进行比较,即FedAvg、FedPoxr、SCAFFOLD和FedNvao.本实验通过狄利克雷分布Dir(0.1)模拟各客户端数据的类别分布.所有方法基于两种常见的深度神经网络模型(即ResNet20和MobileNet V2)进行训练和性能比较.
+本文将GFL与目前最新的方法进行比较,即FedAvg、FedPoxr、SCAFFOLD和FedNvao.本实验通过狄利克雷分布Dir(0.1)模拟各客户端数据的类别分布.所有方法基于两种常见的深度神经网络模型(即ResNet20和MobileNet V2)进行训练和性能比较。
+	\\ \hspace*{\fill} \\
+GFL 在合成数据生成阶段训练了 200 个 epoch。然后，我们从每个客户端 $k$ 中随机选择 $n_{S_k}=500$  个合成样本。在联邦学习阶段，初始全局训练 epoch $E_s$ 设置为 10，如果未指定，epoch decay 参数 $\tau$ 设置为 0.1。
+	\\ \hspace*{\fill} \\
+上述所有算法共享相同的基本训练设置。训练包含 100 轮通信，每轮每个客户端训练 20 个 epoch，服务器和客户端的批大小都设置为 128。
 \end{frame}
 
 
