@@ -128,33 +128,27 @@ $$
 \end{frame}
 
 	
+\begin{frame}{3.2 Synthetic Data Generation}{Threat Model}
+	将 GAN 引入 GFL 中的联邦学习。但是，GAN 提供的合成数据可能会泄露客户的隐私信息。 GAN 中最严重的漏洞之一是成员关系问题。例如，即使他/她参加了 GAN 训练，也没有人希望他/她的脸出现在生成的图像中。
+\end{frame}
 
 
-\begin{frame}{3.2 Synthetic Data Generation}
+\begin{frame}{3.2 Synthetic Data Generation}{Privacy-preserving Data Generation}
 
 
 \begin{columns}
 \begin{column}{0.5\textwidth}
 \begin{figure}[ht]
 \centering
-\includegraphics[width=1\textwidth]{images/img_gan}
+\includegraphics[width=1\textwidth]{images/algo2_1}
 \end{figure}
 
-类别均衡采样器构造完成后, 各客户端根据采 样概率 $\widetilde{P}_m$ 采样相应的类别 $m$。 值得注意的是, 该过程在客户端进行, 客户端的数据分布信息不会发送至服务器端。
 \end{column}
 \begin{column}{0.5\textwidth}
-(1) 统计客户端上类别 $m$ 的概率:
-$$
-P_m=\frac{n_m}{\sum_{m=0}^{M-1} n_m}
-$$
-(2)计算与客户端上类别分布相反的采样概率, 即类别 $m$ 的采样概率为:
-$$
-\bar{P}_m=1-P_m
-$$
-(3) 归一化采样概率:
-$$
-\widetilde{P}_m=\frac{\bar{P}_m}{\sum_{m=0}^{M-1} \bar{P}_m}
-$$
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\textwidth]{images/algo2_1}
+\end{figure}
 \end{column}
 \end{columns}
 
@@ -186,7 +180,7 @@ $$
 \end{frame}
 
 \begin{frame}{4.2 对比模型}
-本文将GFL与目前最新的方法进行比较,即FedAvg、FedPoxr、SCAFFOLD和FedNvao.本实验通过狄利克雷分布Dir(0.1)模拟各客户端数据的类别分布.所有方法基于两种常见的深度神经网络模型(即ResNet20和MobileNet V2)进行训练和性能比较。
+本文将GFL与目前最新的方法进行比较,即FedAvg、FedPoxr、SCAFFOLD和FedNvao。本实验通过狄利克雷分布Dir(0.1)模拟各客户端数据的类别分布。
 	\\ \hspace*{\fill} \\
 GFL 在合成数据生成阶段训练了 200 个 epoch。然后，我们从每个客户端 $k$ 中随机选择 $n_{S_k}=500$  个合成样本。在联邦学习阶段，初始全局训练 epoch $E_s$ 设置为 10，如果未指定，epoch decay 参数 $\tau$ 设置为 0.1。
 	\\ \hspace*{\fill} \\
@@ -195,20 +189,41 @@ GFL 在合成数据生成阶段训练了 200 个 epoch。然后，我们从每�
 
 
 \begin{frame}{4.3 实验结果}{Result Analysis}
-	\includegraphics[width=1.\textwidth]{images/img_expr2}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1.\textwidth]{images/res_table2}
+\end{figure}
+	1. GFL 在所有设置中都优于其他算法; 2. non-iid程度越大，GFL的优势越明显; 3.数据集越复杂，GFL 越优越。
 \end{frame}
 
 \begin{frame}{4.3 实验结果}{Result Analysis}
-	\includegraphics[width=0.75\textwidth]{images/img_expr1}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.75\textwidth]{images/res_table3}
+\end{figure}
+	
+	1. Epoch Delay参数在 GFL 中是必不可少的;
+	 
+	2. 只使用合成数据的方法是没有用的。
 \end{frame}
 
 \begin{frame}{4.3 实验结果}{Result Analysis}
-	\includegraphics[width=0.75\textwidth]{images/img_expr3}
+
+\begin{figure}[ht]
+\centering
+	\includegraphics[width=0.75\textwidth]{images/res_fig3}
+	\end{figure}
 \end{frame}
 
 
 \begin{frame}{4.3 实验结果}{Result Analysis}
-	\includegraphics[width=1.\textwidth]{images/img_expr4}
+\begin{figure}[ht]
+\centering
+	\includegraphics[width=0.75\textwidth]{images/res_table4}
+	\end{figure}
+	
+	根据图 3 和表 IV 中的实验，选择$\epsilon$ = 0.1，这可以防止成员推理攻击，同时保持良好的性能。
 \end{frame}
 
 
@@ -217,9 +232,11 @@ GFL 在合成数据生成阶段训练了 200 个 epoch。然后，我们从每�
 
 \begin{frame}{研究总结}
 
-本文提出了一种基于数据生成的类别均衡联邦学习(CBFL)方法.CBFL针对各客户端构造类别均衡的数据集,以降低客户端类别不均衡和客户端之间分布差异的影响.
+本文提出了一个称为生成联合学习 (GFL) 的新框架来处理非独立同分布问题。我们将 DPGAN 引入 GFL 以应对潜在的隐私攻击，尤其是成员推理攻击。
 \\ \hspace*{\fill} \\
-具体而言,CBFL设计了一个类别分布均衡器,其由一个类别均衡采样器和一个数据生成器组成.其中,类别均衡采样器以较高概率采样客户端本地数据量不足的类别,然后,数据生成器根据所采样的类别生成相应的虚拟数据.结合本地数据和虚拟数据,客户端构造类别均衡的数据集来进行模型训练,从而有利于构建高性能全局模型.
+大量实验表明，GFL 可以在非 iid 情况下工作，也可以在 iid 情况下工作，并且在大多数情况下优于其他框架，如 FedProx 和 SCAFFOLD。隐私评估表明，通过在 DPGAN 的训练中加入适当的噪声，我们可以有效地防御成员推理攻击。我们还分析了 GFL 引入的Epoch Decay 参数的必要性，这对于防止模式崩溃和低质量样本损害全局模型很重要。
+
+
 \end{frame}
 
 
