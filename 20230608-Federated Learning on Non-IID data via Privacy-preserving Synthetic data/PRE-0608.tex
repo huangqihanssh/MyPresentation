@@ -129,8 +129,26 @@ $$
 
 	
 \begin{frame}{3.2 Synthetic Data Generation}{Threat Model}
-	将 GAN 引入 GFL 中的联邦学习。但是，GAN 提供的合成数据可能会泄露客户的隐私信息。 GAN 中最严重的漏洞之一是成员关系问题。例如，即使他/她参加了 GAN 训练，也没有人希望他/她的脸出现在生成的图像中。
+	将 GAN 引入 GFL 中的联邦学习。但是，GAN 提供的合成数据可能会泄露客户的隐私信息。 \textbf{GAN 中最严重的漏洞之一是成员关系问题。例如，即使他/她参加了 GAN 训练，也没有人希望他/她的脸出现在生成的图像中。}
+		\\ \hspace*{\fill} \\
+	本文将考虑虚拟一个对手（GFL中的服务器），他的目的是\textbf{推断一个单一的已知记录是否包括在受害者（目标GAN模型）的训练集中，这被称为成员推理攻击。}对手是半诚实的，他遵循正常的训练过程，但对成员关系很好奇。作为对手的半诚实服务器处于如下所述的黑盒设置中。
+
+\begin{itemize}
+\item The architecture of the victim.
+\item The parameters and training hyper-parameters of the victim.
+\item The dataset used in the victim.
+\end{itemize}
+
 \end{frame}
+
+\begin{frame}{3.2 Synthetic Data Generation}{Privacy-preserving Data Generation}
+\textbf{服务器作为协调整个 FL 训练的角色，本文希望它能够主动参与训练，而不是被动地聚合参数。}由于缺少特征信息，我们想为服务器创建一个小型 iid 数据集，以帮助在短时间内找到全局最优值。这个 iid 数据集中的数据应该完全来自客户端，所以仍然面临着共享时数据隐私信息可能泄露的挑战。
+\\ \hspace*{\fill} \\
+本文专注于抵抗成员推理攻击和防止数据分布信息泄漏，在合成数据生成阶段，提供了一种实现合成数据隐私保护生成的解决方案。
+
+
+\end{frame}
+
 
 
 \begin{frame}{3.2 Synthetic Data Generation}{Privacy-preserving Data Generation}
@@ -147,7 +165,7 @@ $$
 \begin{column}{0.5\textwidth}
 \begin{figure}[ht]
 \centering
-\includegraphics[width=1\textwidth]{images/algo2_1}
+\includegraphics[width=1\textwidth]{images/algo2_2}
 \end{figure}
 \end{column}
 \end{columns}
@@ -156,12 +174,22 @@ $$
 \end{frame}
 
 
-\begin{frame}{3.3 Federated Learning with Synthetic Data}{数据生成器}
-通过类别均衡采样器, 客户端可获得各类别的 采样量。 然而, 如何根据所采样的类别获得相应的 数据以用于本地模型的训练仍然是一个难题。 为解 决该问题, 本文引入了数据生成器 $G$。\textbf{该数据生成 器的输人为类别标签 $y$ 和噪声矢量 $z$。 其中 $y \in$ $\{0,1, \ldots, M-1\}, z$ 服从高斯分布 $N(0,1)$。}  数据生 成器 $G$ 根据噪声矢量 $z$ 和类别标签 $y$ 生成相应的数据 $\hat{x}$, 即
-$$
-\hat{x}=G(z \mid y), z \sim N(0,1) 
-$$
-数据生成器和类别均衡采样器构造完成后, 客户端首先根据类别均衡采样器采样类别 $m$, 然后利用数据 生成器生成类别为 $m$ 的虚拟数据。 最后, 客户端结 合本地数据和生成的虚拟数据, 从而构造类别均衡 的数据集来训练本地模型。
+\begin{frame}{3.3 Federated Learning with Synthetic Data}
+\begin{columns}
+\begin{column}{0.4\textwidth}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\textwidth]{images/algo3_1}
+\end{figure}
+
+\end{column}
+\begin{column}{0.4\textwidth}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\textwidth]{images/algo3_2}
+\end{figure}
+\end{column}
+\end{columns}
 \end{frame}
 
 
@@ -170,7 +198,8 @@ $$
 
 \section{实验分析}
 
-\begin{frame}{4.1 数据集}
+\begin{frame}{4.1 数据配置}{数据集}
+
 在我们的实验中，我们使用 DPGAN 作为Local GAN模型，ResNet18 作为 EMNIST 和 CIFAR-10联邦学习的训练模型。
 
 	\begin{itemize}
@@ -178,6 +207,14 @@ $$
 \item[2)] CIFAR-10。它包含 10 个不同类别的 60, 000 个 32 × 32 彩色图像，与 EMNIST 相比，这是一项更复杂的任务。我们使用这个数据集来衡量 GFL 在艰巨任务中的稳定性。
 \end{itemize}
 \end{frame}
+
+\begin{frame}{4.2 数据配置}{Dirichlet Distribution}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\textwidth]{images/dir}
+\end{figure}
+\end{frame}
+
 
 \begin{frame}{4.2 对比模型}
 本文将GFL与目前最新的方法进行比较,即FedAvg、FedPoxr、SCAFFOLD和FedNvao。本实验通过狄利克雷分布Dir(0.1)模拟各客户端数据的类别分布。
