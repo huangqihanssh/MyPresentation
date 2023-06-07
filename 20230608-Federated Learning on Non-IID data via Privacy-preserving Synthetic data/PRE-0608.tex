@@ -38,7 +38,7 @@
 
 \section{研究背景}
 
-\begin{frame}{1.1 联邦学习}
+\begin{frame}{1.1 Federated Learning (联邦学习)}
 \begin{itemize}
 \item 联邦学习是一种分布式机器学习方法,其利用一个中央服务器(也称为服务器端)协调各终端设备(也称为客户端),协同训练一个各客户端共享的全局模型。
 
@@ -49,37 +49,43 @@
 \item[(2)]服务器端接收并聚合各客户端的本地模型参数以获得性能更优的全局模型.然而,现有联邦学习机制尚面临两大不足。
 \end{itemize}
 \end{itemize}
-
 \end{frame}
 
-\begin{frame}{1.1 联邦学习}
-\begin{itemize}
-\item 联邦学习是一种分布式机器学习方法,其利用一个中央服务器(也称为服务器端)协调各终端设备(也称为客户端),协同训练一个各客户端共享的全局模型。
 
-\item 与传统中心化训练方法不同,\textbf{联邦学习不需要各设备发送自身隐私数据至数据中心,因此有利于保护数据隐私。}具体而言,联邦学习在客户端和服务器端之间通过多轮通信迭代优化模型。
-\item 每轮通信包含两个阶段:
-\begin{itemize}
-\item[(1)]各客户端从服务器端下载全局模型,并在本地数据上进行训练以获得本地模型;
-\item[(2)]服务器端接收并聚合各客户端的本地模型参数以获得性能更优的全局模型.然而,现有联邦学习机制尚面临两大不足。
-\end{itemize}
-\end{itemize}
 
+\begin{frame}{1.1 Federated Learning (联邦学习)}
+
+\begin{columns}
+\begin{column}{1\textwidth}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{images/fl_arch}
+\end{figure}
+\end{column}
+\begin{column}{0.\textwidth}
+\end{column}
+\end{columns}
 \end{frame}
+
 
 \begin{frame}{1.2 现有问题}
 \begin{columns}
-\begin{column}{0.45\textwidth}
-\begin{figure}[ht]
-\centering
-\includegraphics[width=1\textwidth]{images/img_unbalance}
-\end{figure}
-\end{column}
-\begin{column}{0.65\textwidth}
+\begin{column}{0.5\textwidth}
+\textbf{联邦学习的现存问题：}
 \begin{itemize}
-\item \textbf{类别不均衡。}全局模型需考虑多个客户端的数据,但各客户端往往仅包含部分类别数据且类别间数据量严重不均衡,使得全局模型难以训练。所训练的本地模型容易过拟合本地数据而在全局数据上往往取得较差性能。更重要的是,这些性能较差的本地模型严重影响全局模型的训练,导致难以构建高性能全局模型。
+\item \textbf{类别不均衡。}全局模型需考虑多个客户端的数据,但各客户端往往仅包含部分类别数据且类别间数据量严重不均衡,使得全局模型难以训练。
 \item \textbf{数据分布差异。}由于各客户端的功能和用户使用习惯不同,不同客户端往往产生不同类别的数据,导致各客户端数据之间的类别分布差异较大。
 \end{itemize}
 \end{column}
+\begin{column}{0.5\textwidth}
+在这项工作中，本文旨在通过提出一种基于 GAN 的方法来解决高度倾斜的数据分布问题，同时保护客户的隐私，从而构建高性能的全局模型。\textbf{而基于GAN技术的联邦学习方法的主要挑战如下:}
+\begin{itemize}
+	\item \textbf{如何在保护本地客户隐私的同时共享合成数据？}
+	\item \textbf{如何在服务器上正确使用从客户端收集的合成数据？}
+	\item \textbf{如何应对GAN引入的潜在模式崩溃和低质量数据？}
+\end{itemize}
+\end{column}
+
 \end{columns}
 \end{frame}
 
@@ -92,32 +98,14 @@
 \end{itemize}
 \end{frame}
 
-\section{问题定义}
-
-\begin{frame}{2 优化目标}
-
-\begin{columns}
-\begin{column}{0.4\textwidth}
-\begin{figure}[ht]
-\centering
-\includegraphics[width=1\textwidth]{images/img_fl}
-\end{figure}
-\end{column}
-\begin{column}{0.6\textwidth}
-为解决上述难题, 本文提出在客户端构造类别均衡的数据集进行训练的策略。 令 $\mathcal{D}$ 表示所构造的类别 均衡数 据集, $M$ 表示全局数据的类别数,则 
-$$
-\mathcal{D}=\left\{(x, y) \mid P(y=i)=\frac{1}{M}, \quad i \in\{0,1, \ldots, M-1\}\right\}
-$$
-其中 $p(\mathcal{D})$ 表示数据集 $\mathcal{D}$ 所代表的经验分布. 因此, 本文 旨在解决如下优化问题:
-$$
-\min _{\boldsymbol{W}_T} \mathbb{E}_k\left[\mathbb{E}_{x_k \sim p(\mathcal{D})}\left[\mathcal{L}\left(x_k ; \boldsymbol{W}_T\right)\right]\right]
-$$
-与仅仅利用客户端本地数据进行训练的方式相比,基于类别均衡的数据集进行训练使得各客户端本地模型之间的差异大大减少。
-\end{column}
-\end{columns}
-
-
-\end{frame}
+%\section{问题定义}
+%
+%\begin{frame}{问题定义}
+%
+%
+%
+%
+%\end{frame}
 
 \section{研究方法}
 
@@ -203,8 +191,8 @@ $$
 在我们的实验中，我们使用 DPGAN 作为Local GAN模型，ResNet18 作为 EMNIST 和 CIFAR-10联邦学习的训练模型。
 
 	\begin{itemize}
-\item[1)] EMNIST。 在实验中使用它的“Digits”子集。它包含 10 个类，总共 280, 000 个样本，分为 240, 000 个训练样本和 40, 000 个测试样本。与 MNIST 相比，它拥有更多数据并且完全平衡。
-\item[2)] CIFAR-10。它包含 10 个不同类别的 60, 000 个 32 × 32 彩色图像，与 EMNIST 相比，这是一项更复杂的任务。我们使用这个数据集来衡量 GFL 在艰巨任务中的稳定性。
+\item[1)] \textbf{EMNIST}。 在实验中使用它的“Digits”子集。它包含 10 个类，总共 280, 000 个样本，分为 240, 000 个训练样本和 40, 000 个测试样本。与 MNIST 相比，它拥有更多数据并且完全平衡。
+\item[2)] \textbf{CIFAR-10}。它包含 10 个不同类别的 60, 000 个 32 × 32 彩色图像，与 EMNIST 相比，这是一项更复杂的任务。我们使用这个数据集来衡量 GFL 在艰巨任务中的稳定性。
 \end{itemize}
 \end{frame}
 
@@ -217,7 +205,7 @@ $$
 
 
 \begin{frame}{4.2 对比模型}
-本文将GFL与目前最新的方法进行比较,即FedAvg、FedPoxr、SCAFFOLD和FedNvao。本实验通过狄利克雷分布Dir(0.1)模拟各客户端数据的类别分布。
+本文将GFL与目前最新的方法进行比较,即\textbf{FedAvg, FedPoxr, SCAFFOLD和FedNvao}。本实验通过狄利克雷分布Dir(0.1)模拟各客户端数据的类别分布。
 	\\ \hspace*{\fill} \\
 GFL 在合成数据生成阶段训练了 200 个 epoch。然后，我们从每个客户端 $k$ 中随机选择 $n_{S_k}=500$  个合成样本。在联邦学习阶段，初始全局训练 epoch $E_s$ 设置为 10，如果未指定，epoch decay 参数 $\tau$ 设置为 0.1。
 	\\ \hspace*{\fill} \\
