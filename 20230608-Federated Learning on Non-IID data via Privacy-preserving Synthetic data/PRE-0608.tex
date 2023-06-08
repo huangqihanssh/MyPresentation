@@ -205,7 +205,7 @@
 
 
 \begin{frame}{4.2 对比模型}
-本文将GFL与目前最新的方法进行比较,即\textbf{FedAvg, FedPoxr, SCAFFOLD和FedNvao}。本实验通过狄利克雷分布Dir(0.1)模拟各客户端数据的类别分布。
+本文将GFL与目前最新的方法进行比较,即\textbf{FedAvg, FedPoxr, SCAFFOLD和FedNvao}。本实验通过A狄利克雷分布Dir(0.1)模拟各客户端数据的类别分布。
 	\\ \hspace*{\fill} \\
 GFL 在合成数据生成阶段训练了 200 个 epoch。然后，我们从每个客户端 $k$ 中随机选择 $n_{S_k}=500$  个合成样本。在联邦学习阶段，初始全局训练 epoch $E_s$ 设置为 10，如果未指定，epoch decay 参数 $\tau$ 设置为 0.1。
 	\\ \hspace*{\fill} \\
